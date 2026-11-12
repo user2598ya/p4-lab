@@ -1,0 +1,91 @@
+
+1. Tunnelled delivery to h2
+
+mininet> h1 python3 send.py 10.98.0.2 "hop test" --tunnel 2
+###[ Ethernet ]### 
+  dst       = ff:ff:ff:ff:ff:ff
+  src       = 00:00:00:00:00:01
+  type      = 0x1212
+###[ MyTunnel ]### 
+     proto_id  = 2048
+     dst_id    = 2
+     hop_limit = 8
+###[ IP ]### 
+        version   = 4
+        ihl       = 5
+        tos       = 0x0
+        len       = 36
+        id        = 1
+        flags     = 
+        frag      = 0
+        ttl       = 64
+        proto     = udp
+        chksum    = 0x6602
+        src       = 10.98.0.1
+        dst       = 10.98.0.2
+        \options   \
+###[ UDP ]### 
+           sport     = 4321
+           dport     = 4321
+           len       = 16
+           chksum    = 0x8dc
+###[ Raw ]### 
+              load      = 'hop test'
+
+Sent from h1-eth0.
+mininet> sh cat logs/h2.txt
+Listening on h2-eth0...
+Received (tunnelled, dst_id=2, hop_limit=6) from 10.98.0.1 to 10.98.0.2, TTL 64: 'hop test'
+
+
+2. Tunnelled delivery to h3
+
+mininet> h1 python3 send.py 10.98.0.3 "hop test h3" --tunnel 3
+###[ Ethernet ]### 
+  dst       = ff:ff:ff:ff:ff:ff
+  src       = 00:00:00:00:00:01
+  type      = 0x1212
+###[ MyTunnel ]### 
+     proto_id  = 2048
+     dst_id    = 3
+     hop_limit = 8
+###[ IP ]### 
+        version   = 4
+        ihl       = 5
+        tos       = 0x0
+        len       = 39
+        id        = 1
+        flags     = 
+        frag      = 0
+        ttl       = 64
+        proto     = udp
+        chksum    = 0x65fe
+        src       = 10.98.0.1
+        dst       = 10.98.0.3
+        \options   \
+###[ UDP ]### 
+           sport     = 4321
+           dport     = 4321
+           len       = 19
+           chksum    = 0xb56c
+###[ Raw ]### 
+              load      = 'hop test h3'
+
+Sent from h1-eth0.
+mininet> sh cat logs/h3.txt
+Listening on h3-eth0...
+Received (tunnelled, dst_id=3, hop_limit=6) from 10.98.0.1 to 10.98.0.3, TTL 64: 'hop test h3'
+
+
+3. Normal IPv4 connectivity test
+
+mininet> h1 ping -c 3 h3
+PING 10.98.0.3 (10.98.0.3) 56(84) bytes of data.
+64 bytes from 10.98.0.3: icmp_seq=1 ttl=62 time=11.0 ms
+64 bytes from 10.98.0.3: icmp_seq=2 ttl=62 time=4.88 ms
+64 bytes from 10.98.0.3: icmp_seq=3 ttl=62 time=6.24 ms
+
+--- 10.98.0.3 ping statistics ---
+3 packets transmitted, 3 received, 0% packet loss, time 2003ms
+rtt min/avg/max/mdev = 4.881/7.364/10.973/2.611 ms
+mininet>
